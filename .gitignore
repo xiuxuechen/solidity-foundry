@@ -1,0 +1,17 @@
+# Compiler files
+cache/
+out/
+lib/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+anvil-zksync.log
+foundryup-zksync
+.vscode/settings.json
