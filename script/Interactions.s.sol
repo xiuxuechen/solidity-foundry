@@ -4,6 +4,8 @@ pragma solidity ^0.8.28;
 import {Script, console} from "forge-std/Script.sol";
 import {DevOpsTools} from "foundry-devops/src/DevOpsTools.sol";
 import {FundMe} from "../src/FundMe.sol";
+import {Raffle} from "../src/Raffle.sol";
+import {VRFCoordinatorV2_5Mock} from "../test/mock/VRFCoordinatorV2_5Mock.sol";
 
 contract FundFundMe is Script {
     function fundFundMe(address fundMeAddress) public {

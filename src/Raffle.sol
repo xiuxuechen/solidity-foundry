@@ -6,21 +6,21 @@ import "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import "@chainlink/contracts/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
 import {console} from "forge-std/console.sol";
 
-error Raffle__NotEnoughEntranceFee(string message);
-error Raffle__TransferFailed(string message);
-error Raffle__RaffleNotOpen(string message);
-error Raffle__UpkeepNotNeeded(
-    uint256 currentBalance,
-    uint256 numPlayers,
-    uint256 raffleState
-);
-
 /**
  * @title 你渴望力量吗！
  * @author xxc
  * @notice 这是一个基于链上随机数的抽奖合约
  */
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
+    error Raffle__NotEnoughEntranceFee(string message);
+    error Raffle__TransferFailed(string message);
+    error Raffle__RaffleNotOpen(string message);
+    error Raffle__UpkeepNotNeeded(
+        uint256 currentBalance,
+        uint256 numPlayers,
+        uint256 raffleState
+    );
+
     enum RaffleState {
         OPEN,
         CALCULATING

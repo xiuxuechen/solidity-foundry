@@ -2,11 +2,19 @@
 pragma solidity ^0.8.28;
 
 import {MockV3Aggregator} from "../test/mock/MockV3Aggregator.sol";
+import {VRFCoordinatorV2_5Mock} from "../test/mock/VRFCoordinatorV2_5Mock.sol";
+import {LinkToken} from "../test/mock/LinkToken.sol";
 import {Script, console} from "forge-std/Script.sol";
 
 abstract contract CodeConstants {
+    // FundMe constant
     uint8 public constant DECIMALS = 8;
     int256 public constant INITIAL_PRICE = 2000e8;
+
+    // Raffle constant
+    address public constant FOUNDRY_DEFAULT_SENDER =
+        0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38;
+    int256 public constant MOCK_WEI_PER_UINT_LINK = 4e15;
 
     uint256 public constant ZK_SYNC_CHAIN_ID = 300;
     uint256 public constant LOCAL_CHAIN_ID = 31337;
@@ -18,6 +26,14 @@ contract HelperConfig is CodeConstants, Script {
 
     struct NetworkConfig {
         address priceFeed;
+        address vrfCoordinator;
+        uint256 subscriptionId;
+        bytes32 gasLane;
+        uint256 interval;
+        uint256 entranceFee;
+        uint32 callbackGasLimit;
+        address link;
+        address account;
     }
 
     NetworkConfig public localNetworkConfig;
@@ -42,20 +58,44 @@ contract HelperConfig is CodeConstants, Script {
 
     function getSepoliaEthConfig() public view returns (NetworkConfig memory) {
         address priceFeed = vm.envAddress("ETH_USD_PRICE_FEED_ADDRESS");
+        uint256 subscriptionId = vm.envUint("SUBSCRIPTION_ID");
+        address vrfCoordinator = vm.envAddress("VRF_COORDINATOR_ADDRESS");
+        bytes32 gasLane = vm.envBytes32("GAS_LANE");
+
         return
             NetworkConfig({
-                priceFeed: priceFeed 
+                priceFeed: priceFeed,
+                subscriptionId: subscriptionId,
+                gasLane: gasLane,
+                interval: 30,
+                entranceFee: 0.01 ether,
+                callbackGasLimit: 500000,
+                vrfCoordinator: vrfCoordinator,
+                link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
+                account: 0x643315C9Be056cDEA171F4e7b2222a4ddaB9F88D
             });
     }
 
     function getZkSyncSepoliaConfig()
         public
-        pure
+        view
         returns (NetworkConfig memory)
     {
+        address priceFeed = vm.envAddress("ETH_USD_PRICE_FEED_ADDRESS");
+        uint256 subscriptionId = vm.envUint("SUBSCRIPTION_ID");
+        address vrfCoordinator = vm.envAddress("VRF_COORDINATOR_ADDRESS");
+        bytes32 gasLane = vm.envBytes32("GAS_LANE");
         return
             NetworkConfig({
-                priceFeed: 0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF // ETH / USD
+                priceFeed: 0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF, // ETH / USD
+                subscriptionId: subscriptionId,
+                gasLane: gasLane,
+                interval: 30,
+                entranceFee: 0.01 ether,
+                callbackGasLimit: 500000,
+                vrfCoordinator: vrfCoordinator,
+                link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
+                account: 0x643315C9Be056cDEA171F4e7b2222a4ddaB9F88D
             });
     }
 
@@ -71,9 +111,30 @@ contract HelperConfig is CodeConstants, Script {
             DECIMALS,
             INITIAL_PRICE
         );
+        console.log(unicode"模拟喂价合约部署成功，开始部署模拟随机数合约...");
+        VRFCoordinatorV2_5Mock mockVRFCoordinator = new VRFCoordinatorV2_5Mock(
+            0.5 ether,
+            1e9,
+            0.25 ether
+        );
+        uint256 subscriptionId = mockVRFCoordinator.createSubscription();
+        console.log(unicode"模拟随机数合约部署完成！");
         vm.stopBroadcast();
 
-        localNetworkConfig = NetworkConfig({priceFeed: address(mockPriceFeed)});
+        LinkToken link = new LinkToken();
+
+        localNetworkConfig = NetworkConfig({
+            priceFeed: address(mockPriceFeed),
+            vrfCoordinator: address(mockVRFCoordinator),
+            subscriptionId: subscriptionId,
+            gasLane: 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c,
+            interval: 30,
+            entranceFee: 0.01 ether,
+            callbackGasLimit: 5000000,
+            link: address(link),
+            account: FOUNDRY_DEFAULT_SENDER
+        });
+        vm.deal(localNetworkConfig.account, 100 ether);
         return localNetworkConfig;
     }
 }
