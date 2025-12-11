@@ -88,7 +88,7 @@ zk-anvil:
 
 # ==================== 以太坊部署 ====================
 # 本地部署
-deploy-local:
+deploy-fundMe-local:
 	@echo "🚀 部署到本地网络..."
 	@echo "提示: 确保已运行 'make anvil'"
 	forge script script/FundMeDeploy.s.sol:deployFundMe \
@@ -96,8 +96,16 @@ deploy-local:
 		--private-key $(DEFAULT_ANVIL_KEY) \
 		--broadcast
 
+deploy-raffle-local:
+	@echo "🚀 部署到本地网络..."
+	@echo "提示: 确保已运行 'make anvil'"
+	forge script script/RaffleDeploy.s.sol:deployRaffle \
+		--rpc-url http://localhost:8545 \
+		--private-key $(DEFAULT_ANVIL_KEY) \
+		--broadcast		
+
 # Sepolia 部署
-deploy-sepolia: check-sepolia-env
+deploy-fundMe-sepolia: check-sepolia-env
 	@echo "🚀 部署到 Sepolia 测试网..."
 	@if [ -z "$(ETHERSCAN_API_KEY)" ]; then \
 		echo "⚠️  跳过合约验证 (ETHERSCAN_API_KEY 未设置)"; \
@@ -117,60 +125,27 @@ deploy-sepolia: check-sepolia-env
 			-vvvv; \
 	fi
 
-# ==================== zkSync 部署 ====================
-# zkSync 本地部署（修复版）
-deploy-zk-local:
-	@echo "🚀 部署到 zkSync 本地网络..."
-	@echo "提示: 确保已运行 'make zk-anvil'"
-	
-	# 首先部署 MockV3Aggregator
-	@echo "📦 部署 MockV3Aggregator..."
-	$(eval MOCK_AGGREGATOR_ADDRESS := $(shell forge create test/mock/MockV3Aggregator.sol:MockV3Aggregator \
-		--rpc-url http://127.0.0.1:8011 \
-		--private-key $(DEFAULT_ZKSYNC_LOCAL_KEY) \
-		--constructor-args 8 200000000000 \
-		--legacy \
-		--zksync \
-		| grep "Deployed to:" | awk '{print $$3}' 2>/dev/null))
-	
-	@if [ -z "$(MOCK_AGGREGATOR_ADDRESS)" ]; then \
-		echo "❌ MockV3Aggregator 部署失败"; \
-		exit 1; \
-	fi
-	
-	@echo "✅ MockV3Aggregator 部署地址: $(MOCK_AGGREGATOR_ADDRESS)"
-	
-	# 部署 FundMe 合约
-	@echo "📦 部署 FundMe 合约..."
-	forge create src/FundMe.sol:FundMe \
-		--rpc-url http://127.0.0.1:8011 \
-		--private-key $(DEFAULT_ZKSYNC_LOCAL_KEY) \
-		--constructor-args $(MOCK_AGGREGATOR_ADDRESS) \
-		--legacy \
-		--zksync
-	
-	@echo "✅ zkSync 本地部署完成!"
-
-# zkSync Sepolia 部署（简化版）
-deploy-zk-sepolia: check-zksync-env
-	@echo "🚀 部署到 zkSync Sepolia 测试网..."
-	@if [ -z "$(SEPOLIA_PRIVATE_KEY)" ]; then \
-		echo "使用默认账户..."; \
-		forge create src/FundMe.sol:FundMe \
-			--rpc-url $(ZKSYNC_SEPOLIA_RPC_URL) \
-			--account default \
-			--constructor-args 0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF \
-			--legacy \
-			--zksync; \
-	else \
-		echo "使用指定私钥..."; \
-		forge create src/FundMe.sol:FundMe \
-			--rpc-url $(ZKSYNC_SEPOLIA_RPC_URL) \
+deploy-raffle-sepolia: check-sepolia-env
+	@echo "🚀 部署到 Sepolia 测试网..."
+	@if [ -z "$(ETHERSCAN_API_KEY)" ]; then \
+		echo "⚠️  跳过合约验证 (ETHERSCAN_API_KEY 未设置)"; \
+		forge script script/RaffleDeploy.s.sol \
+			--rpc-url $(SEPOLIA_RPC_URL) \
 			--private-key $(SEPOLIA_PRIVATE_KEY) \
-			--constructor-args 0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF \
-			--legacy \
-			--zksync; \
-	fi
+			--broadcast \
+			-vvvv; \
+	else \
+		echo "✅ 启用合约验证"; \
+		forge script script/RaffleDeploy.s.sol \
+			--rpc-url $(SEPOLIA_RPC_URL) \
+			--private-key $(SEPOLIA_PRIVATE_KEY) \
+			--broadcast \
+			--verify \
+			--etherscan-api-key $(ETHERSCAN_API_KEY) \
+			-vvvv; \
+	fi	
+
+
 
 # ==================== 交互脚本 ====================
 # 获取发送者地址
@@ -243,6 +218,15 @@ withdraw:
 		$(MAKE) withdraw-local; \
 	fi
 
+enterRaffle-sepolia: check-sepolia-env
+	@echo "🧪 Running staging tests on Sepolia..."
+	forge script script/Interactions.s.sol:EnterRaffle \
+    --rpc-url $(SEPOLIA_RPC_URL) \
+	--private-key $(SEPOLIA_PRIVATE_KEY) \
+    --sender $(SENDER_ADDRESS) \
+	--broadcast \
+    -vvvv
+
 # ==================== 合约地址管理 ====================
 # 获取最近部署的合约地址
 get-fundme-address:
@@ -268,12 +252,8 @@ help:
 	@echo "  make zk-anvil           - 启动 zkSync 本地节点"
 	@echo ""
 	@echo "🚀 部署命令 (Ethereum):"
-	@echo "  make deploy-local       - 部署到本地网络"
-	@echo "  make deploy-sepolia     - 部署到 Sepolia 测试网"
-	@echo ""
-	@echo "⚡ 部署命令 (zkSync):"
-	@echo "  make deploy-zk-local    - 部署到 zkSync 本地网络"
-	@echo "  make deploy-zk-sepolia  - 部署到 zkSync Sepolia 测试网"
+	@echo "  make deploy-fundMe-local       - 部署到本地网络"
+	@echo "  make deploy-fundMe-sepolia     - 部署到 Sepolia 测试网"
 	@echo ""
 	@echo "💰 交互命令:"
 	@echo "  make fund-local         - 资助本地合约"

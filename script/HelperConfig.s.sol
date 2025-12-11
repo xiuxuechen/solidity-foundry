@@ -72,7 +72,7 @@ contract HelperConfig is CodeConstants, Script {
                 callbackGasLimit: 500000,
                 vrfCoordinator: vrfCoordinator,
                 link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
-                account: 0x643315C9Be056cDEA171F4e7b2222a4ddaB9F88D
+                account: 0xB120289C8d2466aD7596007181284639Bd5535fa
             });
     }
 
@@ -95,7 +95,7 @@ contract HelperConfig is CodeConstants, Script {
                 callbackGasLimit: 500000,
                 vrfCoordinator: vrfCoordinator,
                 link: 0x514910771AF9Ca656af840dff83E8264EcF986CA,
-                account: 0x643315C9Be056cDEA171F4e7b2222a4ddaB9F88D
+                account: 0xB120289C8d2466aD7596007181284639Bd5535fa
             });
     }
 
