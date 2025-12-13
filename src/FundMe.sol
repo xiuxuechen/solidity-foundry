@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "./PriceConverter.sol";
-
+import {PriceConverter} from "./PriceConverter.sol";
+import {
+    AggregatorV3Interface
+} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 error NotOwner(bytes message);
 error NotEnoughMoney(bytes message);
 error FailRevert(bytes message);

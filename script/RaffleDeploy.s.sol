@@ -8,7 +8,7 @@ import {
     AddConsumer,
     CreateSubscription,
     FundSubscription
-} from "./Interactions.s.sol";
+} from "./interactions/RaffleInteraction.s.sol";
 
 contract RaffleDeploy is Script {
     function deployRaffle() public returns (Raffle, HelperConfig) {
@@ -18,11 +18,10 @@ contract RaffleDeploy is Script {
 
         if (block.chainid == 0) {
             CreateSubscription createSubscription = new CreateSubscription();
-            (uint256 subId, address consumer) = createSubscription
-                .createSubscription(
-                    netWorkConfig.vrfCoordinator,
-                    netWorkConfig.account
-                );
+            createSubscription.createSubscription(
+                netWorkConfig.vrfCoordinator,
+                netWorkConfig.account
+            );
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(
                 netWorkConfig.vrfCoordinator,

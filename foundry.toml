@@ -10,11 +10,15 @@ ffi = true
 
 remappings = [
   "@openzeppelin/contracts@4.9.6/=lib/openzeppelin-contracts/contracts",
+  "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts",
   "@chainlink/=lib/chainlink-evm",
   "forge-std/=lib/forge-std/src",
   "foundry-devops/=lib/foundry-devops"
 ]
-fs_permissions = [{ access = "read", path = "./broadcast" }]
+fs_permissions = [
+  { access = "read", path = "./broadcast" },
+  { access = "read-write", path = "./"}
+]
 
 [etherscan]
 mainnet = { key = "${ETHERSCAN_API_KEY}" }

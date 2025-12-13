@@ -81,7 +81,6 @@ contract HelperConfig is CodeConstants, Script {
         view
         returns (NetworkConfig memory)
     {
-        address priceFeed = vm.envAddress("ETH_USD_PRICE_FEED_ADDRESS");
         uint256 subscriptionId = vm.envUint("SUBSCRIPTION_ID");
         address vrfCoordinator = vm.envAddress("VRF_COORDINATOR_ADDRESS");
         bytes32 gasLane = vm.envBytes32("GAS_LANE");

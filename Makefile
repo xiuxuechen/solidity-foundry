@@ -102,7 +102,15 @@ deploy-raffle-local:
 	forge script script/RaffleDeploy.s.sol:deployRaffle \
 		--rpc-url http://localhost:8545 \
 		--private-key $(DEFAULT_ANVIL_KEY) \
-		--broadcast		
+		--broadcast
+
+deploy-xxcToken-local:
+	@echo "🚀 部署到本地网络..."
+	@echo "提示: 确保已运行 'make anvil'"
+	forge script script/XxcTokenDeploy.s.sol \
+		--rpc-url http://localhost:8545 \
+		--private-key $(DEFAULT_ANVIL_KEY) \
+		--broadcast			
 
 # Sepolia 部署
 deploy-fundMe-sepolia: check-sepolia-env
@@ -145,6 +153,25 @@ deploy-raffle-sepolia: check-sepolia-env
 			-vvvv; \
 	fi	
 
+deploy-myFamilyNft-sepolia: check-sepolia-env
+	@echo "🚀 部署到 Sepolia 测试网..."
+	@if [ -z "$(ETHERSCAN_API_KEY)" ]; then \
+		echo "⚠️  跳过合约验证 (ETHERSCAN_API_KEY 未设置)"; \
+		forge script script/MyFamilyNftDeploy.s.sol \
+			--rpc-url $(SEPOLIA_RPC_URL) \
+			--private-key $(SEPOLIA_PRIVATE_KEY) \
+			--broadcast \
+			-vvvv; \
+	else \
+		echo "✅ 启用合约验证"; \
+		forge script script/MyFamilyNftDeploy.s.sol \
+			--rpc-url $(SEPOLIA_RPC_URL) \
+			--private-key $(SEPOLIA_PRIVATE_KEY) \
+			--broadcast \
+			--verify \
+			--etherscan-api-key $(ETHERSCAN_API_KEY) \
+			-vvvv; \
+	fi
 
 
 # ==================== 交互脚本 ====================
@@ -226,6 +253,20 @@ enterRaffle-sepolia: check-sepolia-env
     --sender $(SENDER_ADDRESS) \
 	--broadcast \
     -vvvv
+
+mintMyFamilyNft-sepolia: check-sepolia-env
+	@echo "🧪 Running staging tests on Sepolia..."
+	forge script script/Interactions.s.sol:MintMyFamilyNft \
+    --rpc-url $(SEPOLIA_RPC_URL) \
+	--private-key $(SEPOLIA_PRIVATE_KEY) \
+    --sender $(SENDER_ADDRESS) \
+	--broadcast \
+    -vvvv
+
+uploadImageToPinata-sepolia: check-sepolia-env
+	@echo "🧪 Running staging tests on Sepolia..."
+	forge script script/Interactions.s.sol:MeatDataUploadDeploy \
+    -vvvv		
 
 # ==================== 合约地址管理 ====================
 # 获取最近部署的合约地址

@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {FundMeDeploy} from "../../script/FundMeDeploy.s.sol";
 import {FundMe} from "../../src/FundMe.sol";
-import {HelperConfig, CodeConstants} from "../../script/HelperConfig.s.sol";
-import {StdCheats} from "forge-std/StdCheats.sol";
-import {MockV3Aggregator} from "../mock/MockV3Aggregator.sol";
-import {FundFundMe, WithdrawFundMe} from "../../script/Interactions.s.sol";
+import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {
+    FundFundMe,
+    WithdrawFundMe
+} from "../../script/interactions/FundMeInteraction.s.sol";
 
 contract InteractionsTest is Test {
     FundMe fundMe;
